@@ -1,0 +1,321 @@
+// ChatInput component - Input area for sending messages with file upload support
+import { useState, useRef, type FormEvent, type KeyboardEvent, type ChangeEvent } from 'react';
+import { Send, Loader2, Paperclip, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import type { UploadedFile } from '@/types/chat';
+import { ModeSelector, type ChatMode } from './ModeSelector';
+
+interface ChatInputProps {
+  onSend: (message: string, files?: UploadedFile[]) => void;
+  disabled?: boolean;
+  isLoading?: boolean;
+  selectedMode: ChatMode;
+  onModeChange: (mode: ChatMode) => void;
+}
+
+export function ChatInput({ 
+  onSend, 
+  disabled, 
+  isLoading,
+  selectedMode,
+  onModeChange
+}: ChatInputProps) {
+  const [input, setInput] = useState('');
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newFiles: UploadedFile[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check file size (max 4MB)
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large. Max size is 4MB.`);
+        continue;
+      }
+
+      // Check file type (images and common documents)
+      const allowedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+        'application/pdf', 'text/plain', 
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`File type ${file.type} is not supported.`);
+        continue;
+      }
+
+      try {
+        // Convert to base64
+        const base64 = await fileToBase64(file);
+        
+        const uploadedFile: UploadedFile = {
+          name: file.name,
+          type: file.type,
+          data: base64,
+          preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+        };
+
+        newFiles.push(uploadedFile);
+      } catch (error) {
+        toast.error(`Failed to process ${file.name}`);
+        console.error('File processing error:', error);
+      }
+    }
+
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove data URL prefix to get pure base64
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => {
+      const newFiles = [...prev];
+      // Revoke object URL if it exists
+      if (newFiles[index].preview) {
+        URL.revokeObjectURL(newFiles[index].preview!);
+      }
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if ((input.trim() || uploadedFiles.length > 0) && !disabled && !isLoading) {
+      onSend(input.trim(), uploadedFiles.length > 0 ? uploadedFiles : undefined);
+      setInput('');
+      
+      // Clean up file previews
+      uploadedFiles.forEach(file => {
+        if (file.preview) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
+      setUploadedFiles([]);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      {/* Mode Toggles */}
+      <div className="flex flex-wrap items-center gap-2 px-1">
+        <Button
+          type="button"
+          variant={proMode ? "default" : "outline"}
+          size="sm"
+          onClick={onProModeToggle}
+          disabled={disabled || isLoading}
+          className="gap-2 text-xs"
+        >
+          {proMode ? (
+            <>
+              <Crown className="w-4 h-4" />
+              PRO
+            </>
+          ) : (
+            <>
+              <Crown className="w-4 h-4 opacity-50" />
+              PRO
+            </>
+          )}
+        </Button>
+
+        <Button
+          type="button"
+          variant={deepSearch ? "default" : "outline"}
+          size="sm"
+          onClick={onDeepSearchToggle}
+          disabled={disabled || isLoading || proMode}
+          className="gap-2 text-xs"
+        >
+          {deepSearch ? (
+            <>
+              <Zap className="w-4 h-4" />
+              Deep
+            </>
+          ) : (
+            <>
+              <ZapOff className="w-4 h-4 opacity-50" />
+              Deep
+            </>
+          )}
+        </Button>
+
+        <Button
+          type="button"
+          variant={webSearch ? "default" : "outline"}
+          size="sm"
+          onClick={onWebSearchToggle}
+          disabled={disabled || isLoading}
+          className="gap-2 text-xs"
+        >
+          <Globe className="w-4 h-4" />
+          Web
+        </Button>
+
+        <Button
+          type="button"
+          variant={showThinking ? "default" : "outline"}
+          size="sm"
+          onClick={onThinkingToggle}
+          disabled={disabled || isLoading}
+          className="gap-2 text-xs"
+        >
+          <Brain className="w-4 h-4" />
+          Think
+        </Button>
+
+        <Button
+          type="button"
+          variant={realTimeMode ? "default" : "outline"}
+          size="sm"
+          onClick={onRealTimeModeToggle}
+          disabled={disabled || isLoading}
+          className="gap-2 text-xs"
+        >
+          <Radio className="w-4 h-4" />
+          RTM
+        </Button>
+
+        {(proMode || deepSearch || webSearch || showThinking || realTimeMode) && (
+          <span className="text-xs text-muted-foreground hidden md:inline ml-2">
+            {proMode && '🚀 Ultimate Power'}
+            {!proMode && deepSearch && '🔍 Comprehensive'}
+            {webSearch && ' • 🌐 Web'}
+            {showThinking && ' • 💭 Think'}
+            {realTimeMode && ' • ⚡ Real-Time'}
+          </span>
+        )}
+      </div>
+
+      {/* File previews */}
+      {uploadedFiles.length > 0 && (
+        <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-xl premium-glass border border-border/50">
+          {uploadedFiles.map((file, index) => (
+            <div key={index} className="relative group">
+              {file.preview ? (
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-primary/20 premium-shadow hover:border-primary/50 transition-colors">
+                  <img 
+                    src={file.preview} 
+                    alt={file.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative flex items-center gap-2 px-3 py-2 bg-card border-2 border-primary/20 rounded-lg premium-shadow hover:border-primary/50 transition-colors">
+                  <Paperclip className="w-4 h-4 text-primary" />
+                  <span className="text-xs max-w-[100px] truncate font-medium">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(index)}
+                    className="ml-2 hover:text-destructive transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input area */}
+      <div className="flex gap-2 items-end">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.txt,.doc,.docx"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={disabled || isLoading}
+          className="flex-shrink-0 h-12 w-12 rounded-xl hover:bg-primary/10 hover:border-primary/50 transition-all"
+          title="Attach files or images"
+        >
+          <Paperclip className="w-5 h-5" />
+        </Button>
+
+        <Textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={
+            proMode && realTimeMode
+              ? "🚀⚡ PRO + RTM: Ask ANYTHING with live web data..." 
+              : proMode 
+              ? "🚀 PRO MODE: Ask ANYTHING - Zero filters, ultimate power..." 
+              : realTimeMode
+              ? "⚡ RTM: Ask for live web data and current information..."
+              : deepSearch 
+              ? "🔍 Ask for comprehensive analysis..." 
+              : "💬 Ask me anything..."
+          }
+          disabled={disabled || isLoading}
+          className="min-h-[48px] max-h-[200px] resize-none flex-1 rounded-xl border-2 focus:border-primary/50 transition-colors text-[16px]"
+          style={{ fontSize: '16px' }}
+          rows={1}
+        />
+        
+        <Button
+          type="submit"
+          size="icon"
+          disabled={(!input.trim() && uploadedFiles.length === 0) || disabled || isLoading}
+          className="h-12 w-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all premium-shadow"
+        >
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Send className="w-5 h-5" />
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}

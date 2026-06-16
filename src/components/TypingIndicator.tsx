@@ -1,0 +1,235 @@
+import { Logo } from '@/components/Logo';
+import type { TypingIndicatorStyle } from '@/hooks/useAppSettings';
+
+interface TypingIndicatorProps {
+  style?: TypingIndicatorStyle;
+}
+
+export function TypingIndicator({ style = 'dots' }: TypingIndicatorProps) {
+  const renderIndicator = () => {
+    switch (style) {
+      case 'wave':
+        return (
+          <div className="flex items-end gap-[3px] h-5 pb-0.5">
+            {[0, 120, 240].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[4px] rounded-full bg-violet-400 animate-typing-wave-bar transition-none"
+                style={{ animationDelay: `${d}ms`, height: '16px', willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'pulse':
+        return (
+          <div className="flex items-center h-5">
+            <span className="inline-block w-4 h-4 rounded-full border-2 border-sky-400 animate-typing-pulse-ring transition-none" style={{ willChange: 'transform, opacity, box-shadow' }} />
+          </div>
+        );
+      case 'orbit':
+        return (
+          <div className="flex items-center justify-center w-8 h-5">
+            <div className="typing-orbit transition-none" style={{ willChange: 'transform' }}>
+              <span className="transition-none" style={{ willChange: 'transform' }} /><span className="transition-none" style={{ willChange: 'transform' }} /><span className="transition-none" style={{ willChange: 'transform' }} />
+            </div>
+          </div>
+        );
+      case 'neon':
+        return (
+          <div className="flex items-center gap-2 h-5">
+            {[0, 180, 360].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[6px] h-[6px] rounded-full bg-cyan-300 animate-typing-neon transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity, box-shadow' }}
+              />
+            ))}
+          </div>
+        );
+      case 'matrix':
+        return (
+          <div className="flex items-end gap-[5px] h-5 pb-0.5">
+            {[0, 150, 300].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[5px] rounded-sm bg-emerald-400 animate-typing-matrix transition-none"
+                style={{ animationDelay: `${d}ms`, height: '14px', willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'fire':
+        return (
+          <div className="flex items-center gap-[6px] h-5">
+            {[0, 120, 240].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[7px] h-[7px] rounded-[30%] bg-orange-400 animate-typing-fire transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'heart':
+        return (
+          <div className="flex items-center gap-[6px] h-5">
+            {[0, 200, 400].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[8px] h-[8px] bg-rose-400 animate-typing-heart transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'galaxy':
+        return (
+          <div className="flex items-center gap-[5px] h-5">
+            {[0, 160, 320].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[7px] h-[7px] rounded-full bg-violet-500 animate-typing-galaxy transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'rocket':
+        return (
+          <div className="flex items-center gap-[6px] h-5">
+            {[0, 150, 300].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[6px] h-[10px] rounded-sm bg-amber-400 animate-typing-rocket transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'crown':
+        return (
+          <div className="flex items-center gap-[5px] h-5">
+            {[0, 200, 400].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[8px] h-[8px] rotate-45 bg-yellow-400 animate-typing-crown transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'lightning':
+        return (
+          <div className="flex items-center gap-[6px] h-5">
+            {[0, 120, 240].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[4px] h-[14px] rounded-sm bg-yellow-300 animate-typing-lightning transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'ocean':
+        return (
+          <div className="flex items-end gap-[4px] h-5 pb-0.5">
+            {[0, 140, 280].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[6px] rounded-full bg-cyan-400 animate-typing-ocean transition-none"
+                style={{ animationDelay: `${d}ms`, height: '14px', willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'diamond':
+        return (
+          <div className="flex items-center gap-[5px] h-5">
+            {[0, 180, 360].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[7px] h-[7px] rotate-45 bg-sky-300 animate-typing-diamond transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'box_up':
+        return (
+          <div className="flex items-end gap-[4px] h-5 pb-0.5">
+            {[0, 120, 240].map((d, i) => (
+              <span
+                key={d}
+                className="inline-block w-[8px] rounded-sm bg-primary animate-typing-box-up transition-none"
+                style={{ animationDelay: `${d}ms`, height: i % 2 === 0 ? '10px' : '14px', willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'box_down':
+        return (
+          <div className="flex items-start gap-[4px] h-5 pt-0.5">
+            {[0, 120, 240].map((d, i) => (
+              <span
+                key={d}
+                className="inline-block w-[8px] rounded-sm bg-primary animate-typing-box-down transition-none"
+                style={{ animationDelay: `${d}ms`, height: i % 2 === 0 ? '14px' : '10px', willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'box_bounce':
+        return (
+          <div className="flex items-center gap-[4px] h-5">
+            {[0, 150, 300].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[8px] h-[8px] rounded-[4px] bg-primary animate-typing-box-bounce transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      case 'square':
+        return (
+          <div className="grid grid-cols-3 gap-[3px] h-5 items-center">
+            {[0, 80, 160, 240, 320, 400].map((d, i) => (
+              <span
+                key={i}
+                className="inline-block w-[5px] h-[5px] rounded-full bg-primary animate-typing-square transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+      // Default dots
+      default:
+        return (
+          <div className="flex items-center gap-2 h-5">
+            {[0, 200, 400].map((d) => (
+              <span
+                key={d}
+                className="inline-block w-[6px] h-[6px] rounded-full bg-primary animate-[typing-pulse_1.4s_ease-in-out_infinite] transition-none"
+                style={{ animationDelay: `${d}ms`, willChange: 'transform, opacity' }}
+              />
+            ))}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="flex gap-3 mb-6 items-start px-2 animate-fade-in">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+        <Logo size="xs" fit />
+      </div>
+      <div className="flex flex-col gap-1.5 mt-0.5">
+        {renderIndicator()}
+        <p className="text-[11px] text-muted-foreground/60 font-medium tracking-wide">
+          Red Whale is thinking
+          <span className="inline-block w-4 text-left animate-pulse">...</span>
+        </p>
+      </div>
+    </div>
+  );
+}
